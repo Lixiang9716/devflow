@@ -1,0 +1,67 @@
+# DevFlow Analyst Agent CRD
+# AgentTeams (Hiclaw) Configuration
+# Role: Requirements Engineer / Business Analyst
+apiVersion: agentteams.io/v1
+kind: Agent
+metadata:
+  name: devflow-analyst
+  labels:
+    app: devflow
+    phase: "1,5"
+    runtime: openclaw
+spec:
+  identity:
+    role: "Requirements Engineer / Business Analyst"
+    description: >
+      Analyzes natural language requirements into structured use cases,
+      functional requirements, and Lean acceptance criteria. Also handles
+      issue classification for USECASE_GAP and BUG_IN_USECASE in Phase 5.
+    responsibilities:
+      - phase: 1
+        tasks:
+          - AN-1: Requirements analysis — extract entities, identify stakeholders, discover ambiguities
+          - AN-2: Use case design — usecase.create(L0) → clarification → usecase.upgrade(L1)
+          - AN-3: Requirements specification — requirement.create(FR/NFR) → requirement.create_ac
+          - AN-4: Traceability — requirement.traceability_matrix
+      - phase: 5
+        tasks:
+          - AN-6: Issue classification (use case dimension) — verify.classify_issue
+
+  runtime:
+    type: OpenClaw
+    model: deepseek-v4-pro
+    reasoning_effort: high
+
+  tools:
+    - usecase_create
+    - usecase_upgrade
+    - usecase_add_alternative
+    - usecase_declare_known_unknown
+    - usecase_validate
+    - requirement_create
+    - requirement_create_ac
+    - requirement_traceability_matrix
+    - requirement_request_clarification
+    - kb_retrieve
+    - complexity_assess
+
+  permissions:
+    - github:read
+    - minio:write
+    - evidence:write
+
+  skills:
+    - analyst-phase1
+    - analyst-phase5
+    - lean-ac-format
+
+  mcp:
+    servers:
+      - name: devflow-tools
+        transport: stdio
+        command: devflow-mcp-server
+        args: ["--tool-group", "T1,T2,T11"]
+
+  context:
+    maxTokens: 16000
+    knowledgeChannels: [positive, negative]

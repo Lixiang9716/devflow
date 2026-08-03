@@ -1,0 +1,56 @@
+# DevFlow Knowledge Agent CRD (devflow-librarian)
+apiVersion: agentteams.io/v1
+kind: Agent
+metadata:
+  name: devflow-librarian
+  labels:
+    app: devflow
+    phase: "1,2,3,4,5"
+    runtime: openclaw
+spec:
+  identity:
+    role: "Knowledge Manager / Process Engineer"
+    description: >
+      Manages dual-channel knowledge index (positive + negative). Retrieves
+      relevant context before each phase, extracts patterns on task close,
+      generates integration regression tests, audits feedback health at sprint retro.
+    responsibilities:
+      - KN-1: Knowledge retrieval — kb.retrieve (dual channel)
+      - KN-2: Experience extraction — kb.index + kb.extract_integration_test
+      - KN-3: Seed generation — kb.seed_generate (Phase 0)
+      - KN-4: Knowledge hygiene — kb.mark_stale → kb.detect_contradiction
+      - KN-5: Feedback audit — feedback.audit (Sprint Retro)
+      - KN-6: Causal analysis — Pareto root cause + process improvement
+
+  runtime:
+    type: OpenClaw
+    model: deepseek-v4-pro
+    reasoning_effort: medium
+
+  tools:
+    - kb_index
+    - kb_retrieve
+    - kb_mark_stale
+    - kb_detect_contradiction
+    - kb_health_report
+    - kb_extract_integration_test
+    - kb_seed_generate
+    - feedback_audit
+
+  permissions:
+    - github:write
+    - github:docs_only
+    - qdrant:write
+    - evidence:write
+
+  skills:
+    - knowledge-retrieval
+    - knowledge-indexing
+    - feedback-audit
+
+  mcp:
+    servers:
+      - name: devflow-tools
+        transport: stdio
+        command: devflow-mcp-server
+        args: ["--tool-group", "T11,T12"]

@@ -1,0 +1,69 @@
+# DevFlow QA Agent CRD
+apiVersion: agentteams.io/v1
+kind: Agent
+metadata:
+  name: devflow-qa
+  labels:
+    app: devflow
+    phase: "4,5"
+    runtime: qwenpaw
+spec:
+  identity:
+    role: "Test Engineer / QA Auditor"
+    description: >
+      Independently verifies code against acceptance criteria. Runs test suites,
+      mutation testing, regression validity checks, and classifies failures using
+      the issue classification decision tree. KEY: Independent from Developer
+      (different runtime, different permissions).
+    responsibilities:
+      - phase: 4
+        tasks:
+          - QA-1: Independent code review — against AC + SolutionSpec + coding standards
+      - phase: 5
+        tasks:
+          - QA-2: Test generation — test.generate (based on CodeChange + AC)
+          - QA-3: Test execution — test.run → test.coverage
+          - QA-4: Test quality — test.mutation_test → test.regression_validity
+          - QA-5: AC verification — verify.ac (one by one)
+          - QA-6: Issue classification — verify.classify_issue
+          - QA-7: Integration regression — test.integration_run
+
+  runtime:
+    type: QwenPaw
+    model: deepseek-v4-flash
+    reasoning_effort: medium
+
+  tools:
+    - test_generate
+    - test_run
+    - test_coverage
+    - test_mutation_test
+    - test_regression_validity
+    - test_ac_coverage
+    - test_integration_run
+    - test_staging_smoke
+    - verify_ac
+    - verify_classify_issue
+    - verify_classify_integration
+    - verify_verdict
+    - kb_retrieve
+    - timeline_verify
+
+  permissions:
+    - github:read
+    - github:pr_comment
+    - cicd:read
+    - test:execute
+    - evidence:write
+
+  skills:
+    - qa-phase5
+    - issue-classification-tree
+    - test-quality-gates
+
+  mcp:
+    servers:
+      - name: devflow-tools
+        transport: stdio
+        command: devflow-mcp-server
+        args: ["--tool-group", "T8,T9,T12"]

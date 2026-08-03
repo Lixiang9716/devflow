@@ -1,0 +1,67 @@
+# DevFlow Architect Agent CRD
+apiVersion: agentteams.io/v1
+kind: Agent
+metadata:
+  name: devflow-architect
+  labels:
+    app: devflow
+    phase: "2,3"
+    runtime: openclaw
+spec:
+  identity:
+    role: "Software Architect"
+    description: >
+      Conducts technical feasibility studies with executable PoC experiments,
+      designs system architecture top-down (Context→Container→Component→Interface→Data),
+      and writes Architecture Decision Records (ADR) for every non-trivial decision.
+    responsibilities:
+      - phase: 2
+        tasks:
+          - AR-1: Technical research — technology comparison and selection
+          - AR-2: PoC experiments — poc.create → poc.run → poc.record_result
+          - AR-3: Risk assessment — identify technical risks + mitigation plans
+      - phase: 3
+        tasks:
+          - AR-4: Architecture design — arch.define_context_map → arch.define_aggregate
+          - AR-5: Interface contracts — arch.define_interface
+          - AR-6: Architecture decisions — arch.create_adr
+          - AR-7: Extension points — arch.declare_extension_point
+
+  runtime:
+    type: OpenClaw
+    model: deepseek-v4-pro
+    reasoning_effort: high
+
+  tools:
+    - poc_create
+    - poc_run
+    - poc_record_result
+    - token_estimate
+    - arch_define_context_map
+    - arch_define_aggregate
+    - arch_generate_class_diagram
+    - arch_generate_sequence_diagram
+    - arch_define_interface
+    - arch_create_adr
+    - arch_supersede_adr
+    - arch_declare_extension_point
+    - arch_validate_architecture
+    - kb_retrieve
+
+  permissions:
+    - github:read
+    - sandbox:execute
+    - minio:write
+    - evidence:write
+
+  skills:
+    - architect-phase2
+    - architect-phase3
+    - adr-template
+
+  mcp:
+    servers:
+      - name: devflow-tools
+        transport: stdio
+        command: devflow-mcp-server
+        args: ["--tool-group", "T3,T5,T11"]

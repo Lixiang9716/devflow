@@ -1,0 +1,56 @@
+# DevFlow Attacker Agent CRD
+apiVersion: agentteams.io/v1
+kind: Agent
+metadata:
+  name: devflow-attacker
+  labels:
+    app: devflow
+    phase: "1,3"
+    runtime: openclaw
+spec:
+  identity:
+    role: "Adversarial Tester"
+    description: >
+      Dedicated agent whose ONLY job is to find weaknesses. Uses 5 attack strategies:
+      boundary (extreme inputs), order (step reordering), dependency (external anomalies),
+      logic contradiction (cross-UC consistency), role confusion (privilege boundary).
+      Outputs ProbeReport → Human focused review (HIGH/MEDIUM only).
+    responsibilities:
+      - phase: 1
+        tasks:
+          - AT-1: Boundary attack — extreme input values
+          - AT-2: Order attack — step reordering
+          - AT-3: Dependency attack — external service anomalies
+          - AT-4: Logic contradiction — cross-use-case consistency
+          - AT-5: Role confusion — unauthorized privilege escalation
+      - phase: 3
+        tasks:
+          - AT-6: Architecture attack (XL complexity only)
+
+  runtime:
+    type: OpenClaw
+    model: deepseek-v4-pro
+    reasoning_effort: high
+
+  isolation:
+    independent: true  # No context sharing with other agents
+    async: true        # Non-blocking, Phase 3 waits for results
+
+  tools:
+    - usecase_create  # read-only access for probing
+    - requirement_create  # read-only access for probing
+
+  permissions:
+    - read_only
+
+  skills:
+    - attacker-phase1
+    - five-strategies
+    - probe-report-format
+
+  mcp:
+    servers:
+      - name: devflow-tools
+        transport: stdio
+        command: devflow-mcp-server
+        args: ["--tool-group", "T1", "--readonly"]

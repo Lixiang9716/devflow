@@ -1,0 +1,72 @@
+# DevFlow Developer Agent CRD
+apiVersion: agentteams.io/v1
+kind: Agent
+metadata:
+  name: devflow-developer
+  labels:
+    app: devflow
+    phase: "4,5"
+    runtime: hermes
+spec:
+  identity:
+    role: "Software Developer"
+    description: >
+      Generates code as patches (not free-form text), implements by interface
+      contract and verifies by use case. Exception paths first, then happy path.
+      Self-reviews before PR.
+    responsibilities:
+      - phase: 4
+        tasks:
+          - DV-1: Branch management — code.create_branch
+          - DV-2: Code generation — code.generate_patch (interface-first)
+          - DV-3: Compilation verification — compiler.check_syntax → compiler.static_analysis
+          - DV-4: Self-review — code.self_review
+          - DV-5: PR management — code.apply_patch → code.create_pr
+      - phase: 5
+        tasks:
+          - DV-6: CODE_BUG fix — code.revert_patch → code.generate_patch
+
+  runtime:
+    type: Hermes
+    model: deepseek-v4-pro
+    reasoning_effort: medium
+
+  security:
+    sandbox: terminal-isolation
+    forbidden:
+      - push-to-main
+      - read-real-credentials
+    allowed:
+      - feature-branch-write
+
+  tools:
+    - code_create_branch
+    - code_generate_patch
+    - code_apply_patch
+    - code_revert_patch
+    - code_self_review
+    - code_create_pr
+    - compiler_check_syntax
+    - compiler_type_check
+    - compiler_build
+    - compiler_static_analysis
+    - compiler_dependency_scan
+    - kb_retrieve
+
+  permissions:
+    - github:write
+    - github:feature_branch_only
+    - compiler:execute
+    - evidence:write
+
+  skills:
+    - developer-phase4
+    - patch-generation
+    - self-review-checklist
+
+  mcp:
+    servers:
+      - name: devflow-tools
+        transport: stdio
+        command: devflow-mcp-server
+        args: ["--tool-group", "T6,T7,T11"]
